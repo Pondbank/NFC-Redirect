@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Redirecting...</title>
+
+  <!-- fallback if JS disabled -->
+  <meta http-equiv="refresh" content="3">
+
+  <script>
+    async function go() {
+      try {
+        const res = await fetch("redirect.json?v=" + Date.now());
+        const data = await res.json();
+
+        if (data.url) {
+          window.location.replace(data.url);
+        } else {
+          document.body.innerHTML = "No URL set.";
+        }
+      } catch (e) {
+        document.body.innerHTML = "Failed to load redirect.";
+      }
+    }
+
+    go();
+  </script>
+</head>
+<body>
+  <p>Redirecting...</p>
+</body>
+</html>
