@@ -1,100 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Sorting Hat</title>
-    <style>
-        body { 
-            background: #1a1a1a; color: #d4af37; 
-            font-family: 'Garamond', 'Georgia', serif; 
-            text-align: center; padding: 10% 5% 5% 5%; margin: 0;
-            display: flex; flex-direction: column; align-items: center;
-        }
-        h1 { font-size: 2.5rem; margin-bottom: 10px; transition: all 0.5s ease; }
-        #status { font-style: italic; font-size: 1.4rem; height: 3rem; margin-bottom: 20px; }
-        #counter { font-size: 0.9rem; color: #666; margin-top: 20px; border-top: 1px solid #333; padding-top: 10px; }
-        
-        .pop-container { animation: popIn 0.6s cubic-bezier(0.17, 0.89, 0.32, 1.49); width: 100%; }
-        .win-img { 
-            width: 90%; max-width: 450px; 
-            border: 6px solid #ffd700; border-radius: 15px; 
-            box-shadow: 0 0 30px #ffd700; animation: pulse 2s infinite ease-in-out;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Sorting Hat</title>
 
-        .cloak-fade { animation: cloakEffect 3s forwards; }
+<style>
+body { 
+    background: #1a1a1a; color: #d4af37; 
+    font-family: 'Garamond', 'Georgia', serif; 
+    text-align: center; padding: 10% 5% 5% 5%; margin: 0;
+    display: flex; flex-direction: column; align-items: center;
+}
 
-        @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes pulse { 0% { box-shadow: 0 0 20px #ffd700; transform: scale(1); } 50% { box-shadow: 0 0 50px #ff4500; transform: scale(1.03); } 100% { box-shadow: 0 0 20px #ffd700; transform: scale(1); } }
-        @keyframes cloakEffect {
-            0% { opacity: 1; filter: brightness(1); }
-            100% { opacity: 0; filter: brightness(2) blur(10px); transform: scale(1.1); }
-        }
-    </style>
+h1 { font-size: 2.5rem; margin-bottom: 10px; transition: all 0.5s ease; }
+
+#status { font-style: italic; font-size: 1.4rem; height: 3rem; margin-bottom: 20px; }
+
+#counter { font-size: 0.9rem; color: #666; margin-top: 20px; border-top: 1px solid #333; padding-top: 10px; }
+
+video {
+    width: 90%; max-width: 450px;
+    border: 6px solid #ffd700;
+    border-radius: 15px;
+    box-shadow: 0 0 30px #ffd700;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+video.show {
+    opacity: 1;
+}
+
+.cloak-fade { animation: cloakEffect 3s forwards; }
+
+@keyframes cloakEffect {
+    0% { opacity: 1; filter: brightness(1); }
+    100% { opacity: 0; filter: brightness(2) blur(10px); transform: scale(1.1); }
+}
+</style>
 </head>
+
 <body>
 
-    <h1 id="headerText">The Sorting Hat</h1>
-    <div id="status">Ahem... stay still...</div>
-    <div id="resultContainer"></div>
-    <div id="counter">Sorting Attempt: <span id="attemptNum">1</span></div>
+<h1 id="headerText">The Sorting Hat</h1>
+<div id="status">Ahem... stay still...</div>
+<div id="resultContainer"></div>
+<div id="counter">Sorting Attempt: <span id="attemptNum">1</span></div>
 
-    <script>
-        // --- CONFIGURATION ---
-        const latitude = "51.5007"; // UPDATE THIS
-        const longitude = "-0.1246"; // UPDATE THIS
-        const winChance = 0.3; 
-        const winImage = "download.jpeg";
+<!-- 🎥 Videos -->
+<video id="gryffVid" playsinline>
+    <source src="Sorting Hat Gryffindor.mp4" type="video/mp4">
+</video>
 
-        const statusText = document.getElementById('status');
-        const headerText = document.getElementById('headerText');
-        const resultContainer = document.getElementById('resultContainer');
-        const attemptDisplay = document.getElementById('attemptNum');
+<video id="slythVid" playsinline>
+    <source src="Sorting Hat Slytherin.mp4" type="video/mp4">
+</video>
 
-        // Handle the persistent counter
-        let attempts = parseInt(localStorage.getItem('sorting_attempts')) || 1;
-        attemptDisplay.innerText = attempts;
+<script>
+// --- CONFIG ---
+const latitude = 51.5007;
+const longitude = -0.1246;
+const winChance = 0.3;
 
-        const prompts = ["Difficult...", "Plenty of courage...", "Now, where to put you?", "DECIDING YOUR FATE..."];
+// --- ELEMENTS ---
+const statusText = document.getElementById('status');
+const headerText = document.getElementById('headerText');
+const resultContainer = document.getElementById('resultContainer');
+const attemptDisplay = document.getElementById('attemptNum');
 
-        let i = 0;
-        function cyclePrompts() {
-            if (i < prompts.length) {
-                statusText.innerText = prompts[i];
-                i++;
-                setTimeout(cyclePrompts, 1500);
-            } else {
-                sortUser();
-            }
-        }
+const gryffVid = document.getElementById("gryffVid");
+const slythVid = document.getElementById("slythVid");
 
-        function sortUser() {
-            if (Math.random() < winChance) {
-                // --- WIN: GRYFFINDOR ---
-                localStorage.removeItem('sorting_attempts'); // Reset for next time they find it
-                headerText.innerText = "GRYFFINDOR!";
-                headerText.style.color = "#ffd700";
-                statusText.innerText = `WELL DONE! It took you ${attempts} tries.`;
-                
-                resultContainer.innerHTML = `<div class="pop-container"><img src="${winImage}" class="win-img"></div>`;
+// --- COUNTER ---
+let attempts = parseInt(localStorage.getItem('sorting_attempts')) || 1;
+attemptDisplay.innerText = attempts;
 
-                setTimeout(() => {
-                    window.location.replace(`https://www.google.com/maps?q=${latitude},${longitude}`);
-                }, 5000);
+// --- PROMPTS ---
+const prompts = [
+    "Hmm... intriguing...",
+    "Plenty of courage...",
+    "A thirst for adventure...",
+    "This will not be easy...",
+    "DECIDING YOUR FATE..."
+];
 
-            } else {
-                // --- FAIL: SLYTHERIN ---
-                localStorage.setItem('sorting_attempts', attempts + 1);
-                headerText.innerText = "SLYTHERIN!";
-                headerText.style.color = "#2a623d";
-                statusText.innerText = "Filch is coming! Under the cloak you go...";
-                
-                setTimeout(() => document.body.classList.add('cloak-fade'), 1000);
-                setTimeout(() => location.reload(), 4000);
-            }
-        }
+let i = 0;
 
-        window.onload = cyclePrompts;
-    </script>
+function cyclePrompts() {
+    if (i < prompts.length) {
+        statusText.innerText = prompts[i];
+        i++;
+        setTimeout(cyclePrompts, 1000 + Math.random() * 1200);
+    } else {
+        sortUser();
+    }
+}
+
+// --- MAIN LOGIC ---
+function sortUser() {
+
+    if (Math.random() < winChance) {
+        // 🏆 GRYFFINDOR
+        localStorage.removeItem('sorting_attempts');
+
+        headerText.innerText = "GRYFFINDOR!";
+        headerText.style.color = "#ffd700";
+        statusText.innerText = `WELL DONE! It took you ${attempts} tries.`;
+
+        resultContainer.innerHTML = "";
+        resultContainer.appendChild(gryffVid);
+
+        gryffVid.currentTime = 0;
+        gryffVid.play();
+
+        setTimeout(() => gryffVid.classList.add("show"), 50);
+
+        // ⏱️ Redirect AFTER video
+        gryffVid.onended = () => {
+            statusText.innerText = "Revealing location...";
+            window.location.replace(
+                `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
+            );
+        };
+
+    } else {
+        // ❌ SLYTHERIN
+        localStorage.setItem('sorting_attempts', attempts + 1);
+
+        headerText.innerText = "SLYTHERIN!";
+        headerText.style.color = "#2a623d";
+        statusText.innerText = "Filch is coming! Under the cloak you go...";
+
+        resultContainer.innerHTML = "";
+        resultContainer.appendChild(slythVid);
+
+        slythVid.currentTime = 0;
+        slythVid.play();
+
+        setTimeout(() => slythVid.classList.add("show"), 50);
+
+        // Fade after video starts
+        setTimeout(() => document.body.classList.add('cloak-fade'), 2000);
+
+        slythVid.onended = () => {
+            location.reload();
+        };
+    }
+}
+
+window.onload = cyclePrompts;
+</script>
+
 </body>
 </html>
