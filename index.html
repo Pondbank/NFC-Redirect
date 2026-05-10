@@ -109,10 +109,11 @@ function playVideo(src, onEnd) {
     vid.playsInline = true;
     vid.preload = "auto";
 
+    vid.volume = 0.3; // 🔊 30% volume (adjust as you like)
+
     resultContainer.innerHTML = "";
     resultContainer.appendChild(vid);
 
-    // Fade in
     setTimeout(() => vid.style.opacity = "1", 50);
 
     vid.onended = onEnd;
