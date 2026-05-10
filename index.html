@@ -79,7 +79,7 @@
                 resultContainer.innerHTML = `<div class="pop-container"><img src="${winImage}" class="win-img"></div>`;
 
                 setTimeout(() => {
-                    window.location.replace(`https://google.com{latitude},${longitude}`);
+                    window.location.replace(`https://www.google.com/maps?q=${latitude},${longitude}`);
                 }, 5000);
 
             } else {
