@@ -13,7 +13,7 @@ body {
     display: flex; flex-direction: column; align-items: center;
 }
 
-h1 { font-size: 2.5rem; margin-bottom: 10px; transition: all 0.5s ease; }
+h1 { font-size: 2.5rem; margin-bottom: 10px; }
 
 #status { font-style: italic; font-size: 1.4rem; height: 3rem; margin-bottom: 20px; }
 
@@ -24,24 +24,35 @@ video {
     border: 6px solid #ffd700;
     border-radius: 15px;
     box-shadow: 0 0 30px #ffd700;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-}
-
-video.show {
-    opacity: 1;
 }
 
 .cloak-fade { animation: cloakEffect 3s forwards; }
 
 @keyframes cloakEffect {
-    0% { opacity: 1; filter: brightness(1); }
-    100% { opacity: 0; filter: brightness(2) blur(10px); transform: scale(1.1); }
+    0% { opacity: 1; }
+    100% { opacity: 0; transform: scale(1.1); filter: blur(10px); }
+}
+
+/* 🔒 Start overlay */
+#startOverlay {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    color: #ffd700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    z-index: 9999;
+    cursor: pointer;
 }
 </style>
 </head>
 
 <body>
+
+<!-- 🔒 User interaction gate -->
+<div id="startOverlay">🎩 Tap to be sorted</div>
 
 <h1 id="headerText">The Sorting Hat</h1>
 <div id="status">Ahem... stay still...</div>
@@ -49,11 +60,11 @@ video.show {
 <div id="counter">Sorting Attempt: <span id="attemptNum">1</span></div>
 
 <!-- 🎥 Videos -->
-<video id="gryffVid" playsinline>
+<video id="gryffVid" playsinline preload="auto">
     <source src="Sorting Hat Gryffindor.mp4" type="video/mp4">
 </video>
 
-<video id="slythVid" playsinline>
+<video id="slythVid" playsinline preload="auto">
     <source src="Sorting Hat Slytherin.mp4" type="video/mp4">
 </video>
 
@@ -68,6 +79,7 @@ const statusText = document.getElementById('status');
 const headerText = document.getElementById('headerText');
 const resultContainer = document.getElementById('resultContainer');
 const attemptDisplay = document.getElementById('attemptNum');
+const overlay = document.getElementById("startOverlay");
 
 const gryffVid = document.getElementById("gryffVid");
 const slythVid = document.getElementById("slythVid");
@@ -114,9 +126,6 @@ function sortUser() {
         gryffVid.currentTime = 0;
         gryffVid.play();
 
-        setTimeout(() => gryffVid.classList.add("show"), 50);
-
-        // ⏱️ Redirect AFTER video
         gryffVid.onended = () => {
             statusText.innerText = "Revealing location...";
             window.location.replace(
@@ -138,9 +147,7 @@ function sortUser() {
         slythVid.currentTime = 0;
         slythVid.play();
 
-        setTimeout(() => slythVid.classList.add("show"), 50);
-
-        // Fade after video starts
+        // Fade effect mid-video
         setTimeout(() => document.body.classList.add('cloak-fade'), 2000);
 
         slythVid.onended = () => {
@@ -149,7 +156,11 @@ function sortUser() {
     }
 }
 
-window.onload = cyclePrompts;
+// 🔑 START AFTER USER TAP
+overlay.onclick = () => {
+    overlay.remove();
+    cyclePrompts();
+};
 </script>
 
 </body>
