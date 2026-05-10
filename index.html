@@ -19,13 +19,17 @@ h1 { font-size: 2.5rem; margin-bottom: 10px; }
 
 #counter { font-size: 0.9rem; color: #666; margin-top: 20px; border-top: 1px solid #333; padding-top: 10px; }
 
+/* Video styling */
 video {
     width: 90%; max-width: 450px;
     border: 6px solid #ffd700;
     border-radius: 15px;
     box-shadow: 0 0 30px #ffd700;
+    opacity: 0;
+    transition: opacity 0.4s ease;
 }
 
+/* Fade effect */
 .cloak-fade { animation: cloakEffect 3s forwards; }
 
 @keyframes cloakEffect {
@@ -33,7 +37,7 @@ video {
     100% { opacity: 0; transform: scale(1.1); filter: blur(10px); }
 }
 
-/* 🔒 Start overlay */
+/* Start overlay */
 #startOverlay {
     position: fixed;
     inset: 0;
@@ -51,22 +55,12 @@ video {
 
 <body>
 
-<!-- 🔒 User interaction gate -->
 <div id="startOverlay">🎩 Tap to be sorted</div>
 
 <h1 id="headerText">The Sorting Hat</h1>
 <div id="status">Ahem... stay still...</div>
 <div id="resultContainer"></div>
 <div id="counter">Sorting Attempt: <span id="attemptNum">1</span></div>
-
-<!-- 🎥 Videos -->
-<video id="gryffVid" playsinline preload="auto">
-    <source src="Sorting Hat Gryffindor.mp4" type="video/mp4">
-</video>
-
-<video id="slythVid" playsinline preload="auto">
-    <source src="Sorting Hat Slytherin.mp4" type="video/mp4">
-</video>
 
 <script>
 // --- CONFIG ---
@@ -80,9 +74,6 @@ const headerText = document.getElementById('headerText');
 const resultContainer = document.getElementById('resultContainer');
 const attemptDisplay = document.getElementById('attemptNum');
 const overlay = document.getElementById("startOverlay");
-
-const gryffVid = document.getElementById("gryffVid");
-const slythVid = document.getElementById("slythVid");
 
 // --- COUNTER ---
 let attempts = parseInt(localStorage.getItem('sorting_attempts')) || 1;
@@ -109,6 +100,24 @@ function cyclePrompts() {
     }
 }
 
+// 🎬 Create + play video dynamically
+function playVideo(src, onEnd) {
+    const vid = document.createElement("video");
+
+    vid.src = src;
+    vid.autoplay = true;
+    vid.playsInline = true;
+    vid.preload = "auto";
+
+    resultContainer.innerHTML = "";
+    resultContainer.appendChild(vid);
+
+    // Fade in
+    setTimeout(() => vid.style.opacity = "1", 50);
+
+    vid.onended = onEnd;
+}
+
 // --- MAIN LOGIC ---
 function sortUser() {
 
@@ -120,18 +129,12 @@ function sortUser() {
         headerText.style.color = "#ffd700";
         statusText.innerText = `WELL DONE! It took you ${attempts} tries.`;
 
-        resultContainer.innerHTML = "";
-        resultContainer.appendChild(gryffVid);
-
-        gryffVid.currentTime = 0;
-        gryffVid.play();
-
-        gryffVid.onended = () => {
+        playVideo("Sorting Hat Gryffindor.mp4", () => {
             statusText.innerText = "Revealing location...";
             window.location.replace(
                 `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
             );
-        };
+        });
 
     } else {
         // ❌ SLYTHERIN
@@ -141,22 +144,16 @@ function sortUser() {
         headerText.style.color = "#2a623d";
         statusText.innerText = "Filch is coming! Under the cloak you go...";
 
-        resultContainer.innerHTML = "";
-        resultContainer.appendChild(slythVid);
-
-        slythVid.currentTime = 0;
-        slythVid.play();
+        playVideo("Sorting Hat Slytherin.mp4", () => {
+            location.reload();
+        });
 
         // Fade effect mid-video
         setTimeout(() => document.body.classList.add('cloak-fade'), 2000);
-
-        slythVid.onended = () => {
-            location.reload();
-        };
     }
 }
 
-// 🔑 START AFTER USER TAP
+// 🔑 Start after tap
 overlay.onclick = () => {
     overlay.remove();
     cyclePrompts();
