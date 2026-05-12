@@ -1,214 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Sorting Hat</title>
+  <meta charset="UTF-8">
+  <title>Redirecting...</title>
 
-<style>
-body { 
-    background: #1a1a1a; color: #d4af37; 
-    font-family: 'Garamond', 'Georgia', serif; 
-    text-align: center; padding: 10% 5% 5% 5%; margin: 0;
-    display: flex; flex-direction: column; align-items: center;
-}
+  <!-- fallback if JS disabled -->
+  <meta http-equiv="refresh" content="3">
 
-h1 { font-size: 2.5rem; margin-bottom: 10px; }
+  <script>
+    async function go() {
+      try {
+        const res = await fetch("redirect.json?v=" + Date.now());
+        const data = await res.json();
 
-#status { font-style: italic; font-size: 1.4rem; height: 3rem; margin-bottom: 20px; }
+        if (data.url) {
+          window.location.replace(data.url);
+        } else {
+          document.body.innerHTML = "No URL set.";
+        }
+      } catch (e) {
+        document.body.innerHTML = "Failed to load redirect.";
+      }
+    }
 
-#counter { font-size: 0.9rem; color: #666; margin-top: 20px; border-top: 1px solid #333; padding-top: 10px; }
-
-/* Video */
-video {
-    width: 90%; max-width: 450px;
-    border: 6px solid #ffd700;
-    border-radius: 15px;
-    box-shadow: 0 0 30px #ffd700;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-}
-
-/* Flash */
-.flash {
-    position: fixed;
-    inset: 0;
-    background: white;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 9998;
-}
-
-.flash.active {
-    animation: flashAnim 1.00s ease;
-}
-
-@keyframes flashAnim {
-    0% { opacity: 0; }
-    30% { opacity: 0.9; }
-    100% { opacity: 0; }
-}
-
-/* Shake */
-.shake {
-    animation: shakeAnim 0.4s;
-}
-
-@keyframes shakeAnim {
-    0% { transform: translate(0, 0); }
-    20% { transform: translate(-6px, 4px); }
-    40% { transform: translate(6px, -4px); }
-    60% { transform: translate(-4px, 2px); }
-    80% { transform: translate(4px, -2px); }
-    100% { transform: translate(0, 0); }
-}
-
-/* Cloak fade */
-.cloak-fade { animation: cloakEffect 3s forwards; }
-
-@keyframes cloakEffect {
-    0% { opacity: 1; }
-    100% { opacity: 0; transform: scale(1.1); filter: blur(10px); }
-}
-
-/* Start overlay */
-#startOverlay {
-    position: fixed;
-    inset: 0;
-    background: #000;
-    color: #ffd700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    z-index: 9999;
-    cursor: pointer;
-}
-</style>
+    go();
+  </script>
 </head>
-
 <body>
-
-<div id="startOverlay">🎩 Tap to be sorted</div>
-<div id="flash" class="flash"></div>
-
-<h1 id="headerText">The Sorting Hat</h1>
-<div id="status">Ahem... stay still...</div>
-<div id="resultContainer"></div>
-<div id="counter">Sorting Attempt: <span id="attemptNum">1</span></div>
-
-<script>
-// --- CONFIG ---
-const latitude = 51.5007;
-const longitude = -0.1246;
-const winChance = 0.3;
-
-// --- ELEMENTS ---
-const statusText = document.getElementById('status');
-const headerText = document.getElementById('headerText');
-const resultContainer = document.getElementById('resultContainer');
-const attemptDisplay = document.getElementById('attemptNum');
-const overlay = document.getElementById("startOverlay");
-const flash = document.getElementById("flash");
-
-// --- COUNTER ---
-let attempts = parseInt(localStorage.getItem('sorting_attempts')) || 1;
-attemptDisplay.innerText = attempts;
-
-// --- PROMPTS ---
-const prompts = [
-    "Hmm... intriguing...",
-    "Plenty of courage...",
-    "A thirst for adventure...",
-    "This will not be easy...",
-    "DECIDING YOUR FATE..."
-];
-
-let i = 0;
-
-function cyclePrompts() {
-    if (i < prompts.length) {
-        statusText.innerText = prompts[i];
-        i++;
-        setTimeout(cyclePrompts, 1000 + Math.random() * 1200);
-    } else {
-        sortUser();
-    }
-}
-
-// ⚡ Impact effect
-function impactEffect(color = "white") {
-    flash.style.background = color;
-
-    flash.classList.add("active");
-    setTimeout(() => flash.classList.remove("active"), 250);
-
-    document.body.classList.add("shake");
-    setTimeout(() => document.body.classList.remove("shake"), 400);
-}
-
-// 🎬 Play video
-function playVideo(src, onEnd) {
-    const vid = document.createElement("video");
-
-    vid.src = src;
-    vid.autoplay = true;
-    vid.playsInline = true;
-    vid.preload = "auto";
-    vid.volume = 0.15; // 🔊 lowered volume
-
-    resultContainer.innerHTML = "";
-    resultContainer.appendChild(vid);
-
-    setTimeout(() => vid.style.opacity = "1", 50);
-
-    vid.onended = onEnd;
-}
-
-// --- MAIN LOGIC ---
-function sortUser() {
-
-    if (Math.random() < winChance) {
-        // 🏆 GRYFFINDOR
-        localStorage.removeItem('sorting_attempts');
-
-        headerText.innerText = "GRYFFINDOR!";
-        headerText.style.color = "#ffd700";
-        statusText.innerText = `WELL DONE! It took you ${attempts} tries.`;
-
-        impactEffect("#ffd700");
-
-        playVideo("Sorting Hat Gryffindor.mp4", () => {
-            statusText.innerText = "Revealing location...";
-            window.location.replace(
-                `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
-            );
-        });
-
-    } else {
-        // ❌ SLYTHERIN
-        localStorage.setItem('sorting_attempts', attempts + 1);
-
-        headerText.innerText = "SLYTHERIN!";
-        headerText.style.color = "#2a623d";
-        statusText.innerText = "Filch is coming! Under the cloak you go...";
-
-        impactEffect("#2a623d");
-
-        playVideo("Sorting Hat Slytherin.mp4", () => {
-            location.reload();
-        });
-
-        setTimeout(() => document.body.classList.add('cloak-fade'), 2000);
-    }
-}
-
-// 🔑 Start after tap
-overlay.onclick = () => {
-    overlay.remove();
-    cyclePrompts();
-};
-</script>
-
+  <p>Redirecting...</p>
 </body>
 </html>
